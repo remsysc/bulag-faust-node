@@ -14,7 +14,7 @@ Rebuilding bulag-faust Spring Boot blog API in Node.js + Express from scratch.
 3. **Polish Later** - Pagination, validation, rate limiting AFTER MVP works
 
 ```
-MVP (Phases 1-5) → Features (Phases 6-8) → Polish (Phases 9-10)
+MVP (Phases 1-5) → Features (Phases 6-9) → Polish (Phases 10-11)
      ↓                    ↓                     ↓
   Must have           Should have            Nice to have
 ```
@@ -112,105 +112,75 @@ Request → Controller → Service → Repository → DB
 
 ---
 
-## 🔲 Phase 3 — Foundation (Types + Repositories)
+## ✅ Phase 3 — Foundation (Types + Repositories) (COMPLETE)
 
 **Goal:** Type safety + clean data access layer
 
-**Why first?** Everything else depends on these. Do this BEFORE auth!
+**Why first?** Everything else depends on these. Types define your contracts.
+Repositories isolate SQL from business logic — if you ever swap postgres for
+another DB, only this layer changes.
 
-### 3.1 — TypeScript Types
-- [ ] Create `src/types/entities.ts`
-- [ ] Define these interfaces **(in order)**:
-  - [ ] `User` - base entity (id, username, email, password, timestamps)
-  - [ ] `UserPublic` - response DTO (no password!)
-  - [ ] `Role` - role entity (id, name)
-  - [ ] `UserWithRoles` - user + roles (for JWT)
-  - [ ] `AuthCredentials` - login input (email, password)
-  - [ ] `RegisterCredentials` - register input (username, email, password)
-  - [ ] `JWTPayload` - JWT payload (userId, email, roles, iat?, exp?)
+### 3.1 — TypeScript Types ✅
+- [x] Create `src/types/entities.ts`
+- [x] `User`, `UserPublic`, `Role`, `UserWithRoles`
+- [x] `AuthCredentials`, `RegisterCredentials`, `JWTPayload`
+- [x] `Post`, `PostWithRelations`, `Category`, `Tag`
+- [x] `ApiResponse<T>`, `PageResponse<T>`, `Pageable`
 
-> **Note:** Add Post, Category, Tag types later when you build those features!
+> ⚠️ **Known typos to fix before Phase 4:**
+> - `categoris` → `categories` in `PostWithRelations`
+> - `fist` → `first` in `PageResponse`
+> - `date?` → `data?` in `ApiResponse`
 
-### 3.2 — Repository Layer (MVP Only)
-- [ ] Create `src/repositories/` directory
-- [ ] Create `src/repositories/user.repository.ts` with **ONLY**:
-  - [ ] `findByEmail(email: string): Promise<User | null>`
-  - [ ] `findByUsername(username: string): Promise<User | null>`
-  - [ ] `create(data: RegisterCredentials): Promise<User>`
-  - [ ] `findById(id: string): Promise<User | null>`
-- [ ] Create `src/repositories/role.repository.ts` with **ONLY**:
-  - [ ] `findByName(name: string): Promise<Role | null>`
-  - [ ] `findUserRoles(userId: string): Promise<Role[]>`
+### 3.2 — User Repository ✅ (partial)
+- [x] `findByEmail(email)`
+- [x] `findByUsername(username)`
+- [x] `createUser(data)`
+- [x] `findById(id)` ← **MISSING — needed by auth middleware in Phase 4**
 
-**✅ Done when:** Types defined, repositories can query users + roles
+### 3.3 — Role Repository 🔲 (not created yet)
+- [x] Create `src/repositories/role.repository.ts`
+  - [x] `findByName(name: string): Promise<Role | null>`
+  - [x] `findUserRoles(userId: string): Promise<Role[]>`
+  - [x] `assignRoleToUser(userId: string, roleId: string): Promise<void>`
 
-> **Spring Boot equivalent:** `@Entity` classes + `@Repository` interfaces
+> **Why `assignRoleToUser`?** During registration, new users must be assigned
+> `ROLE_USER`. Without this, `req.user.roles` will be empty and all role-based
+> middleware will fail silently.
 
----
+**✅ Done when:** All repository methods exist and can query users + roles
 
-## 🔲 Phase 4 — Authentication (MVP CRITICAL!)
-
-**Goal:** Users can register and login
-
-**Why first?** Nothing else works without knowing "who is making the request"
-
-**Dependencies:** Phase 3 (Types + Repositories) complete!
-
-### 4.1 — Services
-- [ ] Create `src/services/auth.service.ts`
-  - [ ] `register(username, email, password)` → hash password, create user, return JWT
-  - [ ] `login(email, password)` → validate credentials, return JWT
-- [ ] Create `src/services/user.service.ts`
-  - [ ] `getCurrentUser(userId)` → get user + roles, return UserPublic
-
-### 4.2 — Controllers + Routes
-- [ ] Create `src/controllers/auth.controller.ts`
-  - [ ] `POST /api/v1/auth/register`
-  - [ ] `POST /api/v1/auth/login`
-- [ ] Create `src/routes/auth.routes.ts`
-- [ ] Wire routes into `app.ts`
-
-### 4.3 — Auth Middleware
-- [ ] Create `src/middlewares/auth.middleware.ts`
-  - [ ] Extract Bearer token from `Authorization` header
-  - [ ] Verify JWT signature
-  - [ ] Attach decoded user to `req.user`
-
-### 4.4 — Test!
-- [ ] Register a new user → get JWT
-- [ ] Login with existing user → get JWT
-- [ ] Access protected route without token → 401
-- [ ] Access protected route with valid token → 200
-
-**✅ Done when:** Register, login, and JWT verification all work!
-
-> **Spring Boot equivalent:** `AuthController`, `AuthService`, `JwtUtils`, `SecurityConfig`
+> **Spring Boot equivalent:** `@Repository` interfaces + `JpaRepository<T, ID>`
 
 ---
 
-## 🔲 Phase 5 — Error Handling (MVP Foundation)
+## 🔲 Phase 4 — Error Handling (Before Auth!)
 
-**Goal:** Consistent error responses
+**Goal:** Consistent error responses established before writing any business logic
 
-**Why now?** Before building more features, establish how errors are handled
+**Why BEFORE auth?** Your very first endpoint (`/register`) can throw conflicts,
+validation errors, and DB errors. Without a global error handler, Express returns
+an ugly unformatted 500. Establish the error contract first — every feature
+you build will rely on it.
 
-**Dependencies:** Phase 4 (Auth) complete!
+> **Spring Boot equivalent:** `@RestControllerAdvice` + `@ExceptionHandler`
 
 - [ ] Create `src/errors/` directory
-  - [ ] `AppError.ts` - base class with statusCode
-  - [ ] `NotFoundException.ts` - 404
-  - [ ] `UnauthorizedException.ts` - 401
-  - [ ] `ForbiddenException.ts` - 403
-  - [ ] `ConflictException.ts` - 409
-  - [ ] `BadRequestException.ts` - 400
-- [ ] Create `src/middlewares/errorHandler.middleware.ts`
-  - [ ] Handle known errors (AppError subclasses)
-  - [ ] Handle 404 (unknown routes)
-  - [ ] Handle 500 (unknown errors - log stack trace)
-- [ ] Wire error handler as **last middleware** in `app.ts`
-- [ ] Update auth endpoints to use custom errors
+  - [ ] `AppError.ts` — base class `extends Error` with `statusCode: number`
+  - [ ] `NotFoundException.ts` — 404
+  - [ ] `UnauthorizedException.ts` — 401
+  - [ ] `ForbiddenException.ts` — 403
+  - [ ] `ConflictException.ts` — 409
+  - [ ] `BadRequestException.ts` — 400
 
-**✅ Done when:** All errors return consistent format:
+- [ ] Create `src/middlewares/errorHandler.middleware.ts`
+  - [ ] Handle known errors: `if (err instanceof AppError)`
+  - [ ] Handle 404 unknown routes: `app.use((req, res) => ...)`
+  - [ ] Handle unknown 500 errors: log stack trace, return generic message
+
+- [ ] Wire error handler as **last middleware** in `app.ts`
+
+**✅ Done when:** All errors return this consistent shape:
 ```json
 {
   "error": "Not Found",
@@ -219,19 +189,85 @@ Request → Controller → Service → Repository → DB
 }
 ```
 
-> **Spring Boot equivalent:** `@RestControllerAdvice` + `@ExceptionHandler`
+---
+
+## 🔲 Phase 5 — Authentication (MVP CRITICAL)
+
+**Goal:** Users can register and login, routes can be protected
+
+**Dependencies:** Phase 3 fully complete (including `findById` + `role.repository`) + Phase 4 complete
+
+> **Before writing any code, answer this:**
+> When `login()` succeeds and you call `jwt.sign()`, where exactly does the
+> `roles: string[]` in your `JWTPayload` come from? Which repository method
+> gives you that data, and at what point in the login flow do you call it?
+
+### 5.1 — Auth Service
+- [ ] Create `src/services/auth.service.ts`
+  - [ ] `register(data: RegisterCredentials): Promise<string>` (returns JWT)
+    1. Check if email already exists → throw `ConflictException`
+    2. Check if username already exists → throw `ConflictException`
+    3. `createUser(data)` — password hashing is in the repository
+    4. Fetch `ROLE_USER` by name
+    5. `assignRoleToUser(newUser.id, role.id)`
+    6. Return signed JWT with `{ userId, email, roles: ['ROLE_USER'] }`
+  - [ ] `login(data: AuthCredentials): Promise<string>` (returns JWT)
+    1. `findByEmail(email)` → not found → throw `UnauthorizedException`
+    2. `bcrypt.compare(password, user.password)` → mismatch → throw `UnauthorizedException`
+    3. `findUserRoles(user.id)` → map to `string[]`
+    4. Return signed JWT with `{ userId, email, roles }`
+
+### 5.2 — Controllers + Routes
+- [ ] Create `src/controllers/auth.controller.ts`
+  - [ ] `POST /api/v1/auth/register` → `201 Created` with JWT
+  - [ ] `POST /api/v1/auth/login` → `200 OK` with JWT
+- [ ] Create `src/routes/auth.routes.ts`
+- [ ] Wire routes into `app.ts`
+
+### 5.3 — Auth Middleware
+- [ ] Create `src/middlewares/auth.middleware.ts`
+  - [ ] Extract `Bearer <token>` from `Authorization` header
+  - [ ] Verify JWT → invalid/expired → throw `UnauthorizedException`
+  - [ ] Attach decoded payload to `req.user` (extend Express `Request` type)
+
+> **How to extend Express Request:**
+> ```typescript
+> // src/types/express.d.ts
+> import { JWTPayload } from './entities';
+> declare global {
+>   namespace Express {
+>     interface Request {
+>       user?: JWTPayload;
+>     }
+>   }
+> }
+> ```
+
+### 5.4 — Test Checklist
+- [ ] `POST /register` with new user → 201 + JWT
+- [ ] `POST /register` with duplicate email → 409 Conflict
+- [ ] `POST /login` with correct credentials → 200 + JWT
+- [ ] `POST /login` with wrong password → 401 Unauthorized
+- [ ] Protected route without token → 401
+- [ ] Protected route with valid token → 200
+- [ ] Decode JWT → confirm `roles` array is populated
+
+**✅ Done when:** All test checklist items pass
+
+> **Spring Boot equivalent:** `AuthController`, `AuthService`, `JwtUtils`, `SecurityConfig`
 
 ---
 
-## 🎉 MVP COMPLETE! 
+## 🎉 MVP COMPLETE!
 
 **You now have:**
 - ✅ User registration + login
 - ✅ JWT authentication
 - ✅ Protected routes
 - ✅ Consistent error handling
+- ✅ Role assignment on register
 
-**Next:** Build features (Posts, Categories, Tags)
+**Next:** Build features (User Profile, Categories, Tags, Posts)
 
 ---
 
@@ -239,72 +275,81 @@ Request → Controller → Service → Repository → DB
 
 **Goal:** Users can view their own profile
 
-**Why now?** Simple read-only endpoint to test the full stack
+**Why now?** Simplest read-only endpoint to validate the full request lifecycle.
+One protected GET, one service call, one repository call. If this breaks,
+your auth middleware or repository has a bug — better to find it here than in Posts.
 
-**Dependencies:** Phase 5 (Error Handling) complete!
+**Dependencies:** Phase 5 complete
 
-- [ ] Extend `src/repositories/user.repository.ts` (already exists!)
-- [ ] Create `src/services/user.service.ts` (extend existing)
-  - [ ] `getPublicUserById(id)` - returns UserPublic
+- [ ] Create `src/services/user.service.ts`
+  - [ ] `getCurrentUser(userId: string): Promise<UserPublic>` — uses `findById`, throws `NotFoundException`
+  - [ ] `getPublicUserById(id: string): Promise<UserPublic>`
 - [ ] Create `src/controllers/user.controller.ts`
-  - [ ] `GET /api/v1/users/me` - current user
-  - [ ] `GET /api/v1/users/:id` - public profile
+  - [ ] `GET /api/v1/users/me` — requires auth middleware, returns current user
+  - [ ] `GET /api/v1/users/:id` — public profile (no password exposed)
 - [ ] Create `src/routes/user.routes.ts`
 - [ ] Wire into `app.ts`
-- [ ] Test: Login → `/users/me` → see your data
 
-**✅ Done when:** Users can fetch their own profile
+**✅ Done when:** `GET /users/me` with valid JWT returns user data without password
+
+> **Spring Boot equivalent:** `UserController`, `@AuthenticationPrincipal`
 
 ---
 
 ## 🔲 Phase 7 — Category Module (Admin-only CRUD)
 
-**Goal:** Admins can manage categories
+**Goal:** Admins can manage categories, anyone can read them
 
-**Dependencies:** Phase 6 (User) complete!
+**Dependencies:** Phase 6 complete
 
-### 7.1 — Repository (NEW)
+### 7.1 — Repository
 - [ ] Create `src/repositories/category.repository.ts`
-  - [ ] `findAll()` - all categories
-  - [ ] `findById(id)` - single category
-  - [ ] `create(name, description)` - create
-  - [ ] `update(id, name, description)` - update
-  - [ ] `delete(id)` - delete
+  - [ ] `findAll(): Promise<Category[]>`
+  - [ ] `findById(id: string): Promise<Category | null>`
+  - [ ] `create(name: string): Promise<Category>`
+  - [ ] `update(id: string, name: string): Promise<Category>`
+  - [ ] `deleteById(id: string): Promise<void>`
 
-### 7.2 — Service + Controller
+### 7.2 — Role Middleware
+- [ ] Create `src/middlewares/requireRole.middleware.ts`
+  - [ ] Accept a role string (e.g. `'ROLE_ADMIN'`)
+  - [ ] Check `req.user?.roles.includes(role)` → false → throw `ForbiddenException`
+
+> **Why a separate middleware and not inline in the service?**
+> Authorization is a cross-cutting concern (like logging). It belongs in the
+> HTTP layer, not business logic. The service should assume the caller is authorized.
+> Spring Boot uses `@PreAuthorize` at the controller level for the same reason.
+
+### 7.3 — Service + Controller
 - [ ] Create `src/services/category.service.ts`
 - [ ] Create `src/controllers/category.controller.ts`
-  - [ ] `GET /api/v1/categories` (public)
-  - [ ] `GET /api/v1/categories/:id` (public)
-  - [ ] `POST /api/v1/categories` (ADMIN only)
-  - [ ] `PUT /api/v1/categories/:id` (ADMIN only)
-  - [ ] `DELETE /api/v1/categories/:id` (ADMIN only)
-
-### 7.3 — Role Middleware
-- [ ] Create `src/middlewares/requireRole.middleware.ts`
-  - [ ] Check if `req.user.roles` contains required role
+  - [ ] `GET /api/v1/categories` — public
+  - [ ] `GET /api/v1/categories/:id` — public
+  - [ ] `POST /api/v1/categories` — `requireAuth` + `requireRole('ROLE_ADMIN')`
+  - [ ] `PUT /api/v1/categories/:id` — `requireAuth` + `requireRole('ROLE_ADMIN')`
+  - [ ] `DELETE /api/v1/categories/:id` — `requireAuth` + `requireRole('ROLE_ADMIN')`
 - [ ] Create `src/routes/category.routes.ts`
 - [ ] Wire into `app.ts`
 
-**✅ Done when:** Categories CRUD works, admin-only writes
+**✅ Done when:** Category CRUD works, non-admin write attempts return 403
 
 > **Spring Boot equivalent:** `CategoryController`, `@PreAuthorize("hasRole('ADMIN')")`
 
 ---
 
-## 🔲 Phase 8 — Tag Module (Simpler CRUD)
+## 🔲 Phase 8 — Tag Module
 
 **Goal:** Authenticated users can manage tags
 
-**Dependencies:** Phase 7 (Category) pattern established!
+**Dependencies:** Phase 7 pattern established (reuse `requireRole` middleware)
 
 - [ ] Create `src/repositories/tag.repository.ts`
-  - [ ] `findAll()`, `findById()`, `create()`, `delete()`
+  - [ ] `findAll()`, `findById()`, `create()`, `deleteById()`
 - [ ] Create `src/services/tag.service.ts`
 - [ ] Create `src/controllers/tag.controller.ts`
-  - [ ] `GET /api/v1/tags` (public)
-  - [ ] `POST /api/v1/tags` (authenticated)
-  - [ ] `DELETE /api/v1/tags/:id` (authenticated, owner only)
+  - [ ] `GET /api/v1/tags` — public
+  - [ ] `POST /api/v1/tags` — `requireAuth`
+  - [ ] `DELETE /api/v1/tags/:id` — `requireAuth`
 - [ ] Create `src/routes/tag.routes.ts`
 - [ ] Wire into `app.ts`
 
@@ -312,59 +357,75 @@ Request → Controller → Service → Repository → DB
 
 ---
 
-## 🔲 Phase 9 — Post Module (CORE FEATURE!)
+## 🔲 Phase 9 — Post Module (CORE FEATURE)
 
-**Goal:** Full blog post CRUD with relationships
+**Goal:** Full blog post CRUD with relationships (author, categories, tags)
 
-**Why now?** The MAIN feature - everything else supports this
-
-**Dependencies:** Phase 7-8 (Category + Tag) patterns established!
+**Dependencies:** Phases 7 + 8 complete (categories and tags must exist first)
 
 ### 9.1 — Repository
 - [ ] Create `src/repositories/post.repository.ts`
-  - [ ] `findAll({ categoryId, tagId, authorId, page, size, published })`
-  - [ ] `findById(id)` - includes author, categories, tags
-  - [ ] `create(data, authorId)` - create post
-  - [ ] `update(id, data, authorId)` - update (owner only)
-  - [ ] `delete(id, authorId)` - delete (owner only)
+  - [ ] `findAll(filters: { categoryId?, tagId?, authorId?, status? }): Promise<Post[]>`
+  - [ ] `findById(id: string): Promise<PostWithRelations | null>` — JOIN author, categories, tags
+  - [ ] `create(data, authorId: string): Promise<Post>`
+  - [ ] `update(id: string, data, authorId: string): Promise<Post>` — verify ownership in SQL
+  - [ ] `deleteById(id: string, authorId: string): Promise<void>` — verify ownership in SQL
+  - [ ] `attachCategories(postId: string, categoryIds: string[]): Promise<void>`
+  - [ ] `attachTags(postId: string, tagIds: string[]): Promise<void>`
+
+> **Why verify ownership in SQL and not in the service?**
+> The service would require fetching the post first, then checking `post.author_id === req.user.userId`.
+> That's 2 queries. A `WHERE id = $1 AND author_id = $2` does it in 1.
+> If 0 rows are affected, the post either doesn't exist or doesn't belong to the user —
+> throw `ForbiddenException`. This is more efficient and avoids race conditions.
 
 ### 9.2 — Service + Controller
 - [ ] Create `src/services/post.service.ts`
 - [ ] Create `src/controllers/post.controller.ts`
-  - [ ] `GET /api/v1/posts` (public, filterable)
-  - [ ] `GET /api/v1/posts/:id` (public)
-  - [ ] `POST /api/v1/posts` (authenticated)
-  - [ ] `PATCH /api/v1/posts/:id` (owner only)
-  - [ ] `DELETE /api/v1/posts/:id` (owner only)
+  - [ ] `GET /api/v1/posts` — public, supports `?categoryId=&tagId=&authorId=&status=`
+  - [ ] `GET /api/v1/posts/:id` — public (only published, unless owner/admin)
+  - [ ] `POST /api/v1/posts` — `requireAuth` → creates as `draft` by default
+  - [ ] `PATCH /api/v1/posts/:id` — `requireAuth` (owner only)
+  - [ ] `DELETE /api/v1/posts/:id` — `requireAuth` (owner only)
 - [ ] Create `src/routes/post.routes.ts`
 - [ ] Wire into `app.ts`
 
 ### 9.3 — Test Full Workflow
-- [ ] Login → Create post with categories + tags → View post → Update → Delete
+- [ ] Login → Create post → View post → Update → Publish → Delete
+- [ ] Attempt to update another user's post → 403
 
-**✅ Done when:** Full blog post workflow works!
+**✅ Done when:** Full blog post workflow works end-to-end
 
-> **Spring Boot equivalent:** `PostController`, `PostService`, `@OneToMany`
+> **Spring Boot equivalent:** `PostController`, `PostService`, `@OneToMany`, `@ManyToMany`
 
 ---
 
-## 🔲 Phase 10 — Pagination (Optimization)
+## 🔲 Phase 10 — Pagination
 
-**Goal:** Efficient data loading for lists
+**Goal:** Efficient data loading for all list endpoints
 
-**Why now?** MVP works! Now optimize.
+**Why now?** MVP works. Now prevent large DB scans from taking down your server.
 
-**Dependencies:** Phase 9 (Posts) complete!
+**Dependencies:** Phase 9 complete
 
-- [ ] Create `src/utils/PageResponse.ts`
-  - [ ] Standard structure: `{ content, page, size, totalElements, totalPages, last, first }`
-- [ ] Apply pagination to:
-  - [ ] `GET /api/v1/posts`
-  - [ ] `GET /api/v1/categories`
-  - [ ] `GET /api/v1/tags`
-- [ ] Add query params: `?page=0&size=10&sort=createdAt,desc`
+- [ ] Create `src/utils/pageResponse.ts`
+  - [ ] Standard shape: `{ content, page, size, totalElements, totalPages, last, first, numberOfElements }`
+- [ ] Update repositories to accept `Pageable` and return counts:
+  - [ ] `GET /api/v1/posts` — `?page=0&size=10&sort=created_at,desc`
+  - [ ] `GET /api/v1/categories` — paginated
+  - [ ] `GET /api/v1/tags` — paginated
+- [ ] Offset pagination SQL pattern:
+  ```sql
+  SELECT * FROM posts ORDER BY created_at DESC LIMIT $1 OFFSET $2
+  SELECT COUNT(*) FROM posts  -- separate query for totalElements
+  ```
 
-**✅ Done when:** All list endpoints support pagination
+> **Why offset pagination for an MVP?**
+> Cursor-based pagination (used by Twitter/Facebook) is more performant at scale
+> but much harder to implement. Offset is what Spring's `Pageable` uses by default.
+> Good enough until you have millions of rows.
+
+**✅ Done when:** All list endpoints return paginated responses
 
 > **Spring Boot equivalent:** `Pageable`, `Page<T>`, `PageResponse<T>`
 
@@ -374,20 +435,20 @@ Request → Controller → Service → Repository → DB
 
 **Goal:** Production-ready API
 
-**Why last?** Only optimize after MVP works!
-
-**Dependencies:** Phase 10 (Pagination) complete!
+**Dependencies:** Phase 10 complete
 
 - [ ] Input validation with `zod`
-  - [ ] Registration (email format, password length)
-  - [ ] Post creation (title required, content min length)
-- [ ] Rate limiting (prevent brute force on auth)
+  - [ ] `POST /register` — email format, password min 8 chars, username min 3 chars
+  - [ ] `POST /login` — email + password required
+  - [ ] `POST /posts` — title required, content min length
+  - [ ] Create `src/middlewares/validate.middleware.ts` — generic zod schema validator
+- [ ] Rate limiting on auth endpoints (prevent brute force)
 - [ ] CORS configuration
 - [ ] Helmet.js security headers
 - [ ] Request logging middleware
-- [ ] API documentation (README with endpoints)
+- [ ] API documentation (README with all endpoints + example requests/responses)
 
-**✅ Done when:** API is secure and documented
+**✅ Done when:** API is secured and documented
 
 ---
 
@@ -404,10 +465,12 @@ Request → Controller → Service → Repository → DB
 | `@PathVariable` | `req.params.id` |
 | `@RequestParam` | `req.query.page` |
 | `@RequestBody` | `req.body` |
-| `@PreAuthorize` | Custom middleware (`requireAuth`, `requireRole`) |
-| `@RestControllerAdvice` | Last `app.use()` (error handler) |
+| `@PreAuthorize` | `requireAuth` + `requireRole` middlewares |
+| `@RestControllerAdvice` | Last `app.use()` error handler |
 | `SecurityContextHolder` | `req.user` from auth middleware |
-| `Page<T>` | `PageResponse<T>` utility class |
+| `Page<T>` | `PageResponse<T>` utility |
+| `HttpStatus.CREATED` | `res.status(201)` |
+| `HttpStatus.NO_CONTENT` | `res.status(204).send()` on delete |
 
 ---
 
@@ -425,18 +488,29 @@ Request → Controller → Service → Repository → DB
 |-------|--------|-------|
 | Phase 1 - Setup | ✅ Complete | Project skeleton ready |
 | Phase 2 - Database | ✅ Complete | All tables created |
-| **Phase 3 - Foundation** | 🔲 **NEXT!** | Types + Repositories |
-| Phase 4 - Auth | 🔲 Pending | Register + Login + JWT |
-| Phase 5 - Errors | 🔲 Pending | Error handling |
-| Phase 6-9 - Features | 🔲 Pending | User, Category, Tag, Post |
-| Phase 10-11 - Polish | 🔲 Pending | Pagination, Security |
+| Phase 3 - Foundation | ⚠️ Partial | Fix typos + add `findById` + create `role.repository.ts` |
+| **Phase 4 - Error Handling** | 🔲 **NEXT** | Do this BEFORE auth |
+| Phase 5 - Auth | 🔲 Pending | Register + Login + JWT + role assignment |
+| Phase 6 - User Profile | 🔲 Pending | |
+| Phase 7 - Categories | 🔲 Pending | |
+| Phase 8 - Tags | 🔲 Pending | |
+| Phase 9 - Posts | 🔲 Pending | Core feature |
+| Phase 10 - Pagination | 🔲 Pending | |
+| Phase 11 - Polish | 🔲 Pending | |
 
 ---
 
-**🚀 Start with Phase 3 - Foundation!**
+## 🚀 Immediate Next Steps
 
-1. Create `src/types/entities.ts` (User, Role, Auth types)
-2. Create `src/repositories/user.repository.ts` + `role.repository.ts`
-3. Then move to Phase 4 (Authentication)
+Before starting Phase 4, finish Phase 3:
 
-**Remember:** One phase at a time. Test each phase. Don't skip ahead! ✨
+1. Fix typos in `src/types/entities.ts`:
+   - `categoris` → `categories`
+   - `fist` → `first`
+   - `date?` → `data?` in `ApiResponse`
+
+2. Add `findById` to `src/repositories/user.repository.ts`
+
+3. Create `src/repositories/role.repository.ts` with `findByName`, `findUserRoles`, `assignRoleToUser`
+
+Then: **Phase 4 (Error Handling) → Phase 5 (Auth)**. Don't skip the order. ✨

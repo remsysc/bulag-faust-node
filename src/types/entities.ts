@@ -60,7 +60,7 @@ interface Post {
 
 interface PostWithRelations extends Post {
   author: UserPublic;
-  categoris: Category[];
+  categories: Category[];
   tags: Tag[];
 }
 
@@ -78,7 +78,7 @@ interface Tag {
 }
 
 interface ApiResponse<T> {
-  date?: T;
+  data?: T;
   error?: string;
   message?: string;
   statusCode: number;
@@ -91,7 +91,7 @@ interface PageResponse<T> {
   totalElements: number;
   totalPages: number;
   last: boolean;
-  fist: boolean;
+  first: boolean;
   numberOfElements: number;
 }
 interface Pageable {

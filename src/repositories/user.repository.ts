@@ -34,3 +34,11 @@ export const createUser = async (data: RegisterCredentials): Promise<User> => {
 
   return result.rows[0];
 };
+
+export const findById = async (id: number): Promise<User | null> => {
+  const result = await pool.query<User>(
+    `SELECT * FROM users WHERE id = $1 LIMIT 1`,
+    [id],
+  );
+  return result.rows[0] ?? null;
+};
