@@ -1,5 +1,5 @@
 import pool from "../db/";
-import { User, UserWithRoles, Role } from "../types/entities";
+import { Role } from "../types/entities";
 
 export const findByName = async (name: string): Promise<Role | null> => {
   const result = await pool.query<Role>(

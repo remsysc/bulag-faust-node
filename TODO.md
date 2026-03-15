@@ -154,7 +154,7 @@ another DB, only this layer changes.
 
 ---
 
-## 🔲 Phase 4 — Error Handling (Before Auth!)
+## ✅ Phase 4 — Error Handling (COMPLETE)
 
 **Goal:** Consistent error responses established before writing any business logic
 
@@ -165,18 +165,18 @@ you build will rely on it.
 
 > **Spring Boot equivalent:** `@RestControllerAdvice` + `@ExceptionHandler`
 
-- [ ] Create `src/errors/` directory
-  - [ ] `AppError.ts` — base class `extends Error` with `statusCode: number`
-  - [ ] `NotFoundException.ts` — 404
-  - [ ] `UnauthorizedException.ts` — 401
-  - [ ] `ForbiddenException.ts` — 403
-  - [ ] `ConflictException.ts` — 409
-  - [ ] `BadRequestException.ts` — 400
+- [x] Create `src/errors/` directory
+  - [x] `AppError.ts` — base class `extends Error` with `statusCode: number`
+  - [x] `NotFoundException.ts` — 404
+  - [x] `UnauthorizedException.ts` — 401
+  - [x] `ForbiddenException.ts` — 403
+  - [x] `ConflictException.ts` — 409
+  - [x] `BadRequestException.ts` — 400
 
-- [ ] Create `src/middlewares/errorHandler.middleware.ts`
-  - [ ] Handle known errors: `if (err instanceof AppError)`
-  - [ ] Handle 404 unknown routes: `app.use((req, res) => ...)`
-  - [ ] Handle unknown 500 errors: log stack trace, return generic message
+- [x] Create `src/middlewares/errorHandler.middleware.ts`
+  - [x] Handle known errors: `if (err instanceof AppError)`
+  - [x] Handle 404 unknown routes: `app.use((req, res) => ...)`
+  - [x] Handle unknown 500 errors: log stack trace, return generic message
 
 - [ ] Wire error handler as **last middleware** in `app.ts`
 
