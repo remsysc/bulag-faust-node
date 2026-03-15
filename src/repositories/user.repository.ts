@@ -1,5 +1,6 @@
 import pool from "../db";
-import { User, RegisterCredentials } from "../types/entities";
+import { User } from "../types/entities";
+import { RegisterCredentials } from "../validator/auth.validator";
 import bcrypt from "bcrypt";
 
 export const findByEmail = async (email: string): Promise<User | null> => {

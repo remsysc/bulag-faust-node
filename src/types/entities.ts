@@ -26,17 +26,6 @@ interface UserWithRoles extends User {
   roles: Role[];
 }
 
-interface AuthCredentials {
-  email: string;
-  password: string;
-}
-
-interface RegisterCredentials {
-  username: string;
-  email: string;
-  password: string;
-}
-
 interface JWTPayload {
   userId: string;
   email: string;
@@ -108,8 +97,6 @@ export type {
   UserPublic,
   UserWithRoles,
   Role,
-  AuthCredentials,
-  RegisterCredentials,
   JWTPayload,
   PostStatus,
   Post,

@@ -1,4 +1,5 @@
 import pool from "./index";
+import bcrypt from "bcrypt";
 
 const createTable = async () => {
   try {
@@ -75,10 +76,15 @@ const createTable = async () => {
 `);
     console.log("roles seeeded");
 
-    await pool.query(`INSERT INTO users(username, email, password)
-              VALUES('admin', 'admin@test.com', 'admin123') ON CONFLICT(email) DO NOTHING
+    const hashedPassword = await bcrypt.hash("admin123", 10);
+
+    await pool.query(
+      `INSERT INTO users(username, email, password)
+              VALUES('admin', 'admin@test.com', $1) ON CONFLICT(email) DO NOTHING
       
-`);
+`,
+      [hashedPassword],
+    );
 
     console.log("admin user seeded");
 

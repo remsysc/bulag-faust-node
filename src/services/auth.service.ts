@@ -1,25 +1,25 @@
-import { ConflictException } from "@/errors/ConflictException";
-import { NotFoundException } from "@/errors/NotFoundException";
+import { ConflictException } from "../errors/ConflictException";
+import { NotFoundException } from "../errors/NotFoundException";
 import {
   assignRoleToUser,
   findByName,
   findByUserRoles,
-} from "@/repositories/role.repository";
+} from "../repositories/role.repository";
 import {
   createUser,
   findByEmail,
   findByUsername,
-} from "@/repositories/user.repository";
+} from "../repositories/user.repository";
 
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+import { JWTPayload } from "../types/entities";
+import { UnauthorizedException } from "../errors/UnauthorizedException";
 import {
-  AuthCredentials,
-  JWTPayload,
   RegisterCredentials,
-} from "@/types/entities";
-import { UnauthorizedException } from "@/errors/UnauthorizedException";
+  LoginCredentials,
+} from "@/validator/auth.validator";
 
 export const register = async (data: RegisterCredentials): Promise<string> => {
   const existingEmail = await findByEmail(data.email);
@@ -50,7 +50,7 @@ export const register = async (data: RegisterCredentials): Promise<string> => {
   return token;
 };
 
-export const login = async (data: AuthCredentials): Promise<string> => {
+export const login = async (data: LoginCredentials): Promise<string> => {
   const user = await findByEmail(data.email);
   if (!user) throw new UnauthorizedException("User", "invalid credentials");
 

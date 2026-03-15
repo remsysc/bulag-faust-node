@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import "./src/db/index";
 import { errorHandler } from "./src/middlewares/errorHandler.middleware";
 import { RouteNotFoundException } from "./src/errors/RouteNotFoundException";
+import authRoutes from "./src/routes/auth.routes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,8 @@ app.use(express.json());
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "ok" });
 });
+
+app.use("/api/v1/auth", authRoutes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const err = new RouteNotFoundException(`Cannot ${req.method} ${req.path}`);
