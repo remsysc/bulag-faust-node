@@ -52,10 +52,10 @@ export const register = async (data: RegisterCredentials): Promise<string> => {
 
 export const login = async (data: LoginCredentials): Promise<string> => {
   const user = await findByEmail(data.email);
-  if (!user) throw new UnauthorizedException("User", "invalid credentials");
+  if (!user) throw new UnauthorizedException("Invalid credentials");
 
   const pass = await bcrypt.compare(data.password, user.password);
-  if (!pass) throw new UnauthorizedException("User", "invalid credentaials");
+  if (!pass) throw new UnauthorizedException("Invalid credentaials");
   const roles = await findByUserRoles(user.id);
   const roleNames = roles.map((role) => role.name);
   const secret = process.env.JWT_SECRET;

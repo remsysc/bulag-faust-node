@@ -1,5 +1,40 @@
 # bulag-faust-node
 
+<!--toc:start-->
+
+- [bulag-faust-node](#bulag-faust-node)
+  - [🎯 MVP Philosophy](#🎯-mvp-philosophy)
+  - [Stack](#stack)
+  - [How to Run](#how-to-run)
+  - [📁 Project Structure (Clean Architecture)](#📁-project-structure-clean-architecture)
+  - [✅ Phase 1 — Project Setup (COMPLETE)](#phase-1-project-setup-complete)
+  - [✅ Phase 2 — Database Schema (COMPLETE)](#phase-2-database-schema-complete)
+  - [✅ Phase 3 — Foundation (Types + Repositories) (COMPLETE)](#phase-3-foundation-types-repositories-complete)
+    - [3.1 — TypeScript Types ✅](#31-typescript-types)
+    - [3.2 — User Repository ✅](#32-user-repository)
+    - [3.3 — Role Repository ✅](#33-role-repository)
+  - [✅ Phase 4 — Error Handling (COMPLETE)](#phase-4-error-handling-complete)
+  - [✅ Phase 5 — Validation Layer (COMPLETE)](#phase-5-validation-layer-complete)
+  - [✅ Phase 6 — Authentication (COMPLETE — partial)](#phase-6-authentication-complete-partial)
+    - [6.1 — Auth Service ✅](#61-auth-service)
+    - [6.2 — Controllers + Routes ✅](#62-controllers-routes)
+    - [6.3 — Auth Middleware 🔲](#63-auth-middleware-🔲)
+    - [6.4 — Test Checklist 🔲](#64-test-checklist-🔲)
+  - [🎉 MVP COMPLETE! (after Phase 6.3 + 6.4)](#🎉-mvp-complete-after-phase-63-64)
+  - [🔲 Phase 7 — User Profile (Simplest Feature)](#🔲-phase-7-user-profile-simplest-feature)
+  - [🔲 Phase 8 — Category Module (Admin-only CRUD)](#🔲-phase-8-category-module-admin-only-crud)
+    - [8.1 — Repository](#81-repository)
+    - [8.2 — Role Middleware](#82-role-middleware)
+    - [8.3 — Service + Controller](#83-service-controller)
+  - [🔲 Phase 9 — Tag Module](#🔲-phase-9-tag-module)
+  - [🔲 Phase 10 — Post Module (CORE FEATURE)](#🔲-phase-10-post-module-core-feature)
+    - [10.1 — Repository](#101-repository)
+    - [10.2 — Service + Controller](#102-service-controller)
+  - [🔲 Phase 11 — Pagination](#🔲-phase-11-pagination)
+  - [🔲 Phase 12 — Polish & Security](#🔲-phase-12-polish-security)
+  - [🧠 Key Mental Models](#🧠-key-mental-models)
+  <!--toc:end-->
+
 Rebuilding bulag-faust Spring Boot blog API in Node.js + Express from scratch.
 
 > **Goal:** Learn Node.js by translating what you already know from Spring Boot.
@@ -9,6 +44,7 @@ Rebuilding bulag-faust Spring Boot blog API in Node.js + Express from scratch.
 ## 🎯 MVP Philosophy
 
 **Build in this order:**
+
 1. **MVP First** - Minimum working product (Auth + Posts)
 2. **Structure** - Clean architecture from the start (Types → Repositories → Services → Controllers)
 3. **Polish Later** - Pagination, validation, rate limiting AFTER MVP works
@@ -23,15 +59,15 @@ MVP (Phases 1-5) → Features (Phases 6-9) → Polish (Phases 10-11)
 
 ## Stack
 
-| Node.js | Spring Boot Equivalent |
-|---------|----------------------|
-| Express.js | Spring MVC |
-| pg (raw SQL) | JPA / Hibernate |
-| jsonwebtoken | JwtUtils |
-| bcrypt | BCryptPasswordEncoder |
-| zod | Bean Validation (@Valid) |
-| dotenv | application.properties |
-| nodemon | Spring DevTools |
+| Node.js      | Spring Boot Equivalent   |
+| ------------ | ------------------------ |
+| Express.js   | Spring MVC               |
+| pg (raw SQL) | JPA / Hibernate          |
+| jsonwebtoken | JwtUtils                 |
+| bcrypt       | BCryptPasswordEncoder    |
+| zod          | Bean Validation (@Valid) |
+| dotenv       | application.properties   |
+| nodemon      | Spring DevTools          |
 
 ---
 
@@ -69,6 +105,7 @@ src/
 ```
 
 **Data Flow:**
+
 ```
 Request → Middleware (validate) → Controller → Service → Repository → DB
           (Zod schema)            (HTTP)       (Logic)    (SQL)      (Postgres)
@@ -112,6 +149,7 @@ Request → Middleware (validate) → Controller → Service → Repository → 
 ## ✅ Phase 3 — Foundation (Types + Repositories) (COMPLETE)
 
 ### 3.1 — TypeScript Types ✅
+
 - [x] Create `src/types/entities.ts`
 - [x] `User`, `UserPublic`, `Role`, `UserWithRoles`
 - [x] `JWTPayload`
@@ -119,12 +157,14 @@ Request → Middleware (validate) → Controller → Service → Repository → 
 - [x] `ApiResponse<T>`, `PageResponse<T>`, `Pageable`
 
 ### 3.2 — User Repository ✅
+
 - [x] `findByEmail(email)`
 - [x] `findByUsername(username)`
 - [x] `createUser(data)` — password hashing done here (bcrypt)
 - [x] `findById(id)`
 
 ### 3.3 — Role Repository ✅
+
 - [x] `findByName(name: string): Promise<Role | null>`
 - [x] `findByUserRoles(userId: string): Promise<Role[]>`
 - [x] `assignRoleToUser(userId: string, roleId: string): Promise<void>`
@@ -174,6 +214,7 @@ Request → Middleware (validate) → Controller → Service → Repository → 
 > **Spring Boot equivalent:** `AuthController`, `AuthService`, `JwtUtils`, `SecurityConfig`
 
 ### 6.1 — Auth Service ✅
+
 - [x] `register(data: RegisterCredentials): Promise<string>`
   - Checks email + username uniqueness → `ConflictException`
   - Creates user (hashing in repository)
@@ -186,11 +227,13 @@ Request → Middleware (validate) → Controller → Service → Repository → 
   - Returns signed JWT `{ userId, email, roles }`
 
 ### 6.2 — Controllers + Routes ✅
+
 - [x] `src/controllers/auth.controller.ts` — register + login handlers
 - [x] `src/routes/auth.routes.ts` — wired with validate middleware on register
 - [x] Routes mounted in `app.ts` at `/api/v1/auth`
 
 ### 6.3 — Auth Middleware 🔲
+
 - [ ] Create `src/middlewares/auth.middleware.ts`
   - [ ] Extract `Bearer <token>` from `Authorization` header
   - [ ] Verify JWT → invalid/expired → throw `UnauthorizedException`
@@ -199,7 +242,7 @@ Request → Middleware (validate) → Controller → Service → Repository → 
 
 ```typescript
 // src/types/express.d.ts
-import { JWTPayload } from './entities';
+import { JWTPayload } from "./entities";
 declare global {
   namespace Express {
     interface Request {
@@ -210,12 +253,13 @@ declare global {
 ```
 
 ### 6.4 — Test Checklist 🔲
+
 - [ ] `POST /register` with new user → 201 + JWT
 - [ ] `POST /register` with duplicate email → 409 Conflict
 - [ ] `POST /register` with invalid body (short password, bad email) → 400 Bad Request
 - [ ] `POST /login` with correct credentials → 200 + JWT
 - [ ] `POST /login` with wrong password → 401 Unauthorized
-- [ ] `POST /login` with invalid body → 400 Bad Request  ← _blocked until login validation gap is fixed_
+- [ ] `POST /login` with invalid body → 400 Bad Request ← _blocked until login validation gap is fixed_
 - [ ] Protected route without token → 401
 - [ ] Protected route with valid token → 200
 - [ ] Decode JWT → confirm `roles` array is populated
@@ -227,6 +271,7 @@ declare global {
 ## 🎉 MVP COMPLETE! (after Phase 6.3 + 6.4)
 
 **You will have:**
+
 - ✅ User registration + login
 - ✅ JWT authentication
 - ✅ Protected routes
@@ -266,6 +311,7 @@ declare global {
 **Dependencies:** Phase 7 complete
 
 ### 8.1 — Repository
+
 - [ ] Create `src/repositories/category.repository.ts`
   - [ ] `findAll(): Promise<Category[]>`
   - [ ] `findById(id: string): Promise<Category | null>`
@@ -274,11 +320,13 @@ declare global {
   - [ ] `deleteById(id: string): Promise<void>`
 
 ### 8.2 — Role Middleware
+
 - [ ] Create `src/middlewares/requireRole.middleware.ts`
   - [ ] Accept a role string (e.g. `'ROLE_ADMIN'`)
   - [ ] Check `req.user?.roles.includes(role)` → false → throw `ForbiddenException`
 
 ### 8.3 — Service + Controller
+
 - [ ] Create `src/services/category.service.ts`
 - [ ] Create `src/controllers/category.controller.ts`
   - [ ] `GET /api/v1/categories` — public
@@ -320,6 +368,7 @@ declare global {
 **Dependencies:** Phases 8 + 9 complete
 
 ### 10.1 — Repository
+
 - [ ] Create `src/repositories/post.repository.ts`
   - [ ] `findAll(filters: { categoryId?, tagId?, authorId?, status? }): Promise<Post[]>`
   - [ ] `findById(id: string): Promise<PostWithRelations | null>` — JOIN author, categories, tags
@@ -335,6 +384,7 @@ declare global {
 > More efficient, avoids race conditions.
 
 ### 10.2 — Service + Controller
+
 - [ ] Create `src/services/post.service.ts`
 - [ ] Create `src/controllers/post.controller.ts`
   - [ ] `GET /api/v1/posts` — public
@@ -372,21 +422,21 @@ declare global {
 
 ## 🧠 Key Mental Models
 
-| Spring Boot | Express/TypeScript |
-|-------------|-------------------|
-| `@Entity` | `interface User {}` in `types/entities.ts` |
-| `@RestController` | `router.get/post/put/delete` + controller |
-| `@Service` | `src/services/*.ts` |
-| `@Repository` | `src/repositories/*.ts` |
-| `@Autowired` | `import` at top of file |
-| `ResponseEntity<T>` | `res.status(code).json(data)` |
-| `@PathVariable` | `req.params.id` |
-| `@RequestParam` | `req.query.page` |
-| `@RequestBody` | `req.body` |
-| `@Valid` | `validate(schema)` middleware |
-| `@PreAuthorize` | `requireAuth` + `requireRole` middlewares |
-| `@RestControllerAdvice` | Last `app.use()` error handler |
-| `SecurityContextHolder` | `req.user` from auth middleware |
-| `Page<T>` | `PageResponse<T>` utility |
-| `HttpStatus.CREATED` | `res.status(201)` |
-| `HttpStatus.NO_CONTENT` | `res.status(204).send()` on delete |
+| Spring Boot             | Express/TypeScript                         |
+| ----------------------- | ------------------------------------------ |
+| `@Entity`               | `interface User {}` in `types/entities.ts` |
+| `@RestController`       | `router.get/post/put/delete` + controller  |
+| `@Service`              | `src/services/*.ts`                        |
+| `@Repository`           | `src/repositories/*.ts`                    |
+| `@Autowired`            | `import` at top of file                    |
+| `ResponseEntity<T>`     | `res.status(code).json(data)`              |
+| `@PathVariable`         | `req.params.id`                            |
+| `@RequestParam`         | `req.query.page`                           |
+| `@RequestBody`          | `req.body`                                 |
+| `@Valid`                | `validate(schema)` middleware              |
+| `@PreAuthorize`         | `requireAuth` + `requireRole` middlewares  |
+| `@RestControllerAdvice` | Last `app.use()` error handler             |
+| `SecurityContextHolder` | `req.user` from auth middleware            |
+| `Page<T>`               | `PageResponse<T>` utility                  |
+| `HttpStatus.CREATED`    | `res.status(201)`                          |
+| `HttpStatus.NO_CONTENT` | `res.status(204).send()` on delete         |
