@@ -31,7 +31,7 @@ export const register = async (data: RegisterCredentials): Promise<string> => {
 
   const user = await createUser(data);
   const role = await findByName("ROLE_USER");
-  if (!role) throw new NotFoundException("ROLE", "ROLE_USER");
+  if (!role) throw new NotFoundException("ROLE_USER is not found");
 
   await assignRoleToUser(user.id, role.id);
 

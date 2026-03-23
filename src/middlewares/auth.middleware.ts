@@ -1,9 +1,13 @@
 import { UnauthorizedException } from "@/errors/UnauthorizedException";
-import { Request, Response, NextFunction } from "express";
+import { Request, NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import { JWTPayload } from "@/types/entities";
 
-export const verify = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 

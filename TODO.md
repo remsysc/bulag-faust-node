@@ -234,11 +234,11 @@ Request → Middleware (validate) → Controller → Service → Repository → 
 
 ### 6.3 — Auth Middleware 🔲
 
-- [ ] Create `src/middlewares/auth.middleware.ts`
-  - [ ] Extract `Bearer <token>` from `Authorization` header
-  - [ ] Verify JWT → invalid/expired → throw `UnauthorizedException`
-  - [ ] Attach decoded payload to `req.user`
-- [ ] Create `src/types/express.d.ts` to extend Express `Request`
+- [x] Create `src/middlewares/auth.middleware.ts`
+  - [x] Extract `Bearer <token>` from `Authorization` header
+  - [x] Verify JWT → invalid/expired → throw `UnauthorizedException`
+  - [x] Attach decoded payload to `req.user`
+- [x] Create `src/types/express.d.ts` to extend Express `Request`
 
 ```typescript
 // src/types/express.d.ts
@@ -254,12 +254,12 @@ declare global {
 
 ### 6.4 — Test Checklist 🔲
 
-- [ ] `POST /register` with new user → 201 + JWT
-- [ ] `POST /register` with duplicate email → 409 Conflict
-- [ ] `POST /register` with invalid body (short password, bad email) → 400 Bad Request
-- [ ] `POST /login` with correct credentials → 200 + JWT
-- [ ] `POST /login` with wrong password → 401 Unauthorized
-- [ ] `POST /login` with invalid body → 400 Bad Request ← _blocked until login validation gap is fixed_
+- [x] `POST /register` with new user → 201 + JWT
+- [x] `POST /register` with duplicate email → 409 Conflict
+- [x] `POST /register` with invalid body (short password, bad email) → 400 Bad Request
+- [x] `POST /login` with correct credentials → 200 + JWT
+- [x] `POST /login` with wrong password → 401 Unauthorized
+- [x] `POST /login` with invalid body → 400 Bad Request ← _blocked until login validation gap is fixed_
 - [ ] Protected route without token → 401
 - [ ] Protected route with valid token → 200
 - [ ] Decode JWT → confirm `roles` array is populated
@@ -289,14 +289,14 @@ declare global {
 
 **Dependencies:** Phase 6 fully complete (auth middleware must exist)
 
-- [ ] Create `src/services/user.service.ts`
-  - [ ] `getCurrentUser(userId: string): Promise<UserPublic>` — uses `findById`, throws `NotFoundException`
-  - [ ] `getPublicUserById(id: string): Promise<UserPublic>`
-- [ ] Create `src/controllers/user.controller.ts`
-  - [ ] `GET /api/v1/users/me` — requires auth middleware, returns current user
-  - [ ] `GET /api/v1/users/:id` — public profile (no password exposed)
-- [ ] Create `src/routes/user.routes.ts`
-- [ ] Wire into `app.ts`
+- [x] Create `src/services/user.service.ts`
+  - [x] `getCurrentUser(userId: string): Promise<UserPublic>` — uses `findById`, throws `NotFoundException`
+  - [x] `getPublicUserById(id: string): Promise<UserPublic>`
+- [x] Create `src/controllers/user.controller.ts`
+  - [x] `GET /api/v1/users/me` — requires auth middleware, returns current user
+  - [x] `GET /api/v1/users/:id` — public profile (no password exposed)
+- [x] Create `src/routes/user.routes.ts`
+- [x] Wire into `app.ts`
 
 **✅ Done when:** `GET /users/me` with valid JWT returns user data without password
 

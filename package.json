@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec ts-node app.ts",
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
     "migrate": "ts-node src/db/migrate.ts"

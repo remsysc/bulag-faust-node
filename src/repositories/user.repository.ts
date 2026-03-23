@@ -38,7 +38,7 @@ export const createUser = async (data: RegisterCredentials): Promise<User> => {
 
 export const findById = async (id: string): Promise<User | null> => {
   const result = await pool.query<User>(
-    `SELECT * FROM users WHERE id = $1 LIMIT 1`,
+    `SELECT id, username, email, created_at, updated_at FROM users WHERE id = $1 LIMIT 1`,
     [id],
   );
   return result.rows[0] ?? null;
