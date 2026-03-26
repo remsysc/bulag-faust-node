@@ -26,7 +26,7 @@ interface UserWithRoles extends User {
   roles: Role[];
 }
 
-interface JWTPayload {
+export interface JWTPayload {
   userId: string;
   email: string;
   roles: string[];
@@ -97,7 +97,6 @@ export type {
   UserPublic,
   UserWithRoles,
   Role,
-  JWTPayload,
   PostStatus,
   Post,
   PostWithRelations,

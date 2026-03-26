@@ -9,7 +9,6 @@ export const findByName = async (name: string): Promise<Role | null> => {
 
   return result.rows[0] ?? null;
 };
-
 export const findByUserRoles = async (userId: string): Promise<Role[]> => {
   const result = await pool.query<Role>(
     `SELECT r.id, r.name FROM roles r 

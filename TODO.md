@@ -312,12 +312,12 @@ declare global {
 
 ### 8.1 — Repository
 
-- [ ] Create `src/repositories/category.repository.ts`
-  - [ ] `findAll(): Promise<Category[]>`
-  - [ ] `findById(id: string): Promise<Category | null>`
-  - [ ] `create(name: string): Promise<Category>`
-  - [ ] `update(id: string, name: string): Promise<Category>`
-  - [ ] `deleteById(id: string): Promise<void>`
+- [x] Create `src/repositories/category.repository.ts`
+  - [x]] `findAll(): Promise<Category[]>`
+  - [x] `findById(id: string): Promise<Category | null>`
+  - [x] `create(name: string): Promise<Category>`
+  - [x] `update(id: string, name: string): Promise<Category>`
+  - [x] `deleteById(id: string): Promise<void>`
 
 ### 8.2 — Role Middleware
 
