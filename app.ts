@@ -1,35 +1,33 @@
-import prisma from '@/common/db/prisma';
-import { RouteNotFoundException } from '@/common/errors/RouteNotFoundException';
-import { errorHandler } from '@/common/middlewares/errorHandler.middleware';
-import authRoutes from '@/modules/auth/auth.routes';
-import categoryRoutes from '@/modules/category/category.routes';
-import tagRoutes from '@/modules/tag/tag.routes';
-import userRoutes from '@/modules/user/user.routes';
-import postRoutes from '@/modules/post/post.routes';
-import express, { NextFunction, Request, Response } from 'express';
-import { config, JWT_SECRET } from '@/config/config';
+import prisma from "@/common/db/prisma";
+import { RouteNotFoundException } from "@/common/errors/RouteNotFoundException";
+import { errorHandler } from "@/common/middlewares/errorHandler.middleware";
+import authRoutes from "@/modules/auth/auth.routes";
+import categoryRoutes from "@/modules/category/category.routes";
+import tagRoutes from "@/modules/tag/tag.routes";
+import userRoutes from "@/modules/user/user.routes";
+import postRoutes from "@/modules/post/post.routes";
+import express, { NextFunction, Request, Response } from "express";
+import { config, JWT_SECRET } from "@/config/config";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const secret = config.JWT_SECRET;
 
-
-prisma.$connect().then(() => console.log('Database connected'));
-
+prisma.$connect().then(() => console.log("Database connected"));
 
 // Parse incoming JSON bodies
 app.use(express.json());
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok' });
+app.get("/health", (req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
 });
 
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/user', userRoutes);
-app.use('/api/v1/category', categoryRoutes);
-app.use('/api/v1/tag', tagRoutes);
-app.use('/api/v1/post', postRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/category", categoryRoutes);
+app.use("/api/v1/tag", tagRoutes);
+app.use("/api/v1/post", postRoutes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const err = new RouteNotFoundException(`Cannot ${req.method} ${req.path}`);
