@@ -1,7 +1,6 @@
 import prisma from "@/common/db/prisma";
 import { Category } from "@prisma/client";
 import { Pageable, PageResponse } from "@/common/types/entities";
-import { buildPageResponse } from "@/common/utils/pageResponse";
 
 export const findAll = async (
   pageable: Pageable,

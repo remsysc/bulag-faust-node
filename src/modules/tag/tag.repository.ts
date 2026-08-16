@@ -1,6 +1,5 @@
 import prisma from "@/common/db/prisma";
 import { Pageable, PageResponse } from "@/common/types/entities";
-import { buildPageResponse } from "@/common/utils/pageResponse";
 import { Tag } from "@prisma/client";
 
 export const findAll = async (
@@ -23,8 +22,8 @@ export const findAll = async (
     content: tags,
     page: meta.currentPage,
     size: pageable.size,
-    totalElements: meta.totalCount,
-    totalPages: meta.pageCount,
+    totalElements: meta.totalCount!,
+    totalPages: meta.pageCount!,
     last: meta.isLastPage,
     first: meta.isFirstPage,
     numberOfElements: tags.length,
