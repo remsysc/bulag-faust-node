@@ -5,14 +5,14 @@
 
 ## Overview
 
-| Sprint | Goal | Requirements | Est. Size |
-|--------|------|--------------|-----------|
-| 1 | Pagination + Tag fixes | FR-24, FR-25, FR-39–FR-42, FR-12–FR-14 | M |
-| 2 | Post PATCH + Slugs | FR-19, FR-21b, FR-27–FR-29 | M |
-| 3 | Response envelope | FR-36–FR-38 | M |
-| 4 | Refresh tokens + Logout | FR-30–FR-33 | L |
-| 5 | Rate limiting + Security | FR-34–FR-35, FR-20 (Helmet/CORS) | S |
-| 6 | API tests | FR-21 (PRD) | L |
+| Sprint | Goal                     | Requirements                           | Est. Size |
+| ------ | ------------------------ | -------------------------------------- | --------- |
+| 1      | Pagination + Tag fixes   | FR-24, FR-25, FR-39–FR-42, FR-12–FR-14 | M         |
+| 2      | Post PATCH + Slugs       | FR-19, FR-21b, FR-27–FR-29             | M         |
+| 3      | Response envelope        | FR-36–FR-38                            | M         |
+| 4      | Refresh tokens + Logout  | FR-30–FR-33                            | L         |
+| 5      | Rate limiting + Security | FR-34–FR-35, FR-20 (Helmet/CORS)       | S         |
+| 6      | API tests                | FR-21 (PRD)                            | L         |
 
 ---
 
@@ -24,8 +24,8 @@
 
 ### Tasks
 
-- [ ] FR-24.1 — Wire pagination into category repository using `prisma-extension-pagination` (S)
-- [ ] FR-24.2 — Wire pagination into tag repository using `prisma-extension-pagination` (S)
+- [x] FR-24.1 — Wire pagination into category repository using `prisma-extension-pagination` (S)
+- [x] FR-24.2 — Wire pagination into tag repository using `prisma-extension-pagination` (S)
 - [ ] FR-24.3 — Ensure all list endpoints accept `page`, `limit`, `sortField`, `sortDir` query params (S)
 - [ ] FR-25.1 — Return paginated response shape `{ data, meta: { currentPage, totalCount, totalPages, isFirstPage, isLastPage } }` from all list endpoints (M)
 - [ ] FR-39.1 — Add migration: `is_active Boolean @default(true)` to Tag model (S)

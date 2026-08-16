@@ -1,8 +1,8 @@
-import { Pageable } from '@/common/types/entities';
-import { Prisma, Post as PrismaPost } from '@prisma/client';
+import { Pageable } from "@/common/types/entities";
+import { Prisma, Post as PrismaPost } from "@prisma/client";
 
 export interface PostFilters {
-  status?: PrismaPost['status'];
+  status?: PrismaPost["status"];
   authorId?: string;
   categoryId?: string;
   tagId?: string;
@@ -62,6 +62,6 @@ export type PostWithRelations = Prisma.PostGetPayload<
   typeof postWithRelationsArgs
 >;
 
-export type PostResponseDTO = Prisma.PostGetPayload<{
+export type PostResponse = Prisma.PostGetPayload<{
   select: typeof postResponseSelect;
 }>;

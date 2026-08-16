@@ -1,5 +1,5 @@
-import prisma from '@/common/db/prisma';
-import { Role } from '@prisma/client';
+import prisma from "@/common/db/prisma";
+import { Role } from "@prisma/client";
 
 export const findByName = async (name: string): Promise<Role | null> => {
   const role = await prisma.role.findUnique({ where: { name } });

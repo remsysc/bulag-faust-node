@@ -3,19 +3,22 @@ import { Post, Category, Tag, Prisma } from "@prisma/client";
 import { CreatePostInput, UpdatePostInput } from "./post.schema";
 import {
   FindAllOptions,
-  PostResponseDTO,
+  PostResponse,
   postResponseSelect,
   PostWithRelations,
   postWithRelationsArgs,
 } from "./post.types";
 import { PageResponse } from "@/common/types/entities";
-import { buildPageResponse } from "@/common/utils/pageResponse";
 
 export const findAll = async ({
   filters,
   pageable,
-}: FindAllOptions): Promise<PageResponse<PostResponseDTO>> => {
-  const where: Prisma.PostWhereInput = { deletedAt: null };
+}: FindAllOptions): Promise<PageResponse<PostResponse>> => {
+  //get only posts where deletedAt is null
+  const where: Prisma.PostWhereInput = {
+    deletedAt: null,
+  };
+  //filters
 
   if (filters?.status) where.status = filters.status;
   if (filters?.authorId) where.authorId = filters.authorId;
@@ -25,14 +28,20 @@ export const findAll = async ({
       { content: { contains: filters.search, mode: "insensitive" } },
     ];
   }
-
   if (filters?.categoryId) {
-    where.postCategories = { some: { categoryId: filters.categoryId } };
+    where.postCategories = {
+      some: {
+        categoryId: filters.categoryId,
+      },
+    };
   }
   if (filters?.tagId) {
-    where.postTags = { some: { tagId: filters.tagId } };
+    where.postTags = {
+      some: {
+        tagId: filters.tagId,
+      },
+    };
   }
-
   const [posts, meta] = await prisma.post
     .paginate({
       where,
@@ -48,7 +57,16 @@ export const findAll = async ({
       includePageCount: true,
     });
 
-  return buildPageResponse(posts, pageable, meta.totalCount ?? 0);
+  return {
+    content: posts,
+    page: meta.currentPage,
+    size: pageable.size,
+    totalElements: meta.totalCount!,
+    totalPages: meta.pageCount!,
+    last: meta.isLastPage,
+    first: meta.isFirstPage,
+    numberOfElements: posts.length,
+  };
 };
 
 export const findById = async (id: string): Promise<Post | null> => {
@@ -115,7 +133,7 @@ export const createPost = async (
         })),
       },
     },
-  }); // 👈 Cleared drift: Removed manual 'as Post'
+  });
 };
 
 export const updatePost = async (
