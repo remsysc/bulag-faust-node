@@ -1,15 +1,15 @@
-import prisma from '@/common/db/prisma';
-import { Post, Category, Tag, Prisma } from '@prisma/client';
-import { CreatePostInput, UpdatePostInput } from './post.schema';
+import prisma from "@/common/db/prisma";
+import { Post, Category, Tag, Prisma } from "@prisma/client";
+import { CreatePostInput, UpdatePostInput } from "./post.schema";
 import {
   FindAllOptions,
   PostResponseDTO,
   postResponseSelect,
   PostWithRelations,
   postWithRelationsArgs,
-} from './post.types';
-import { PageResponse } from '@/common/types/entities';
-import { buildPageResponse } from '@/common/utils/pageResponse';
+} from "./post.types";
+import { PageResponse } from "@/common/types/entities";
+import { buildPageResponse } from "@/common/utils/pageResponse";
 
 export const findAll = async ({
   filters,
@@ -21,8 +21,8 @@ export const findAll = async ({
   if (filters?.authorId) where.authorId = filters.authorId;
   if (filters?.search) {
     where.OR = [
-      { title: { contains: filters.search, mode: 'insensitive' } },
-      { content: { contains: filters.search, mode: 'insensitive' } },
+      { title: { contains: filters.search, mode: "insensitive" } },
+      { content: { contains: filters.search, mode: "insensitive" } },
     ];
   }
 
@@ -33,21 +33,22 @@ export const findAll = async ({
     where.postTags = { some: { tagId: filters.tagId } };
   }
 
-  const [posts, total] = await Promise.all([
-    prisma.post.findMany({
+  const [posts, meta] = await prisma.post
+    .paginate({
       where,
       select: postResponseSelect,
-      skip: (pageable.page - 1) * pageable.size,
-      take: pageable.size,
       orderBy: {
-        [pageable.sort?.field || 'createdAt']:
-          pageable.sort?.direction || 'desc',
+        [pageable.sort?.field || "createdAt"]:
+          pageable.sort?.direction || "desc",
       },
-    }),
-    prisma.post.count({ where }),
-  ]);
+    })
+    .withPages({
+      limit: pageable.size,
+      page: pageable.page,
+      includePageCount: true,
+    });
 
-  return buildPageResponse(posts, pageable, total);
+  return buildPageResponse(posts, pageable, meta.totalCount ?? 0);
 };
 
 export const findById = async (id: string): Promise<Post | null> => {
@@ -151,9 +152,12 @@ export const updatePost = async (
   });
 };
 
-export const deleteById = async (id: string, authorId: string): Promise<void> => {
+export const deleteById = async (
+  id: string,
+  authorId: string,
+): Promise<void> => {
   await prisma.post.update({
-    where: { id, deletedAt: null , authorId},
+    where: { id, deletedAt: null, authorId },
     data: {
       deletedAt: new Date(),
     },
