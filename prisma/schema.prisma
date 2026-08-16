@@ -70,11 +70,11 @@ model Category {
 }
 
 model Tag {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-
-  postTags PostTag[]
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  isActive  Boolean   @default(true)
+  postTags  PostTag[]
 
   @@map("tags")
 }

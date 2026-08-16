@@ -1,31 +1,25 @@
-import { Router } from 'express';
-import * as tagController from './tag.controller';
-import { authenticateToken } from '@/common/middlewares/auth.middleware';
-import { requireRole } from '@/common/middlewares/requireRole.middleware';
-import { validate } from '@/common/middlewares/validator.middleware';
+import { Router } from "express";
+import * as tagController from "./tag.controller";
+import { authenticateToken } from "@/common/middlewares/auth.middleware";
+import { requireRole } from "@/common/middlewares/requireRole.middleware";
+import { validate } from "@/common/middlewares/validator.middleware";
 import {
   paginationSchema,
   paramsIdSchema,
-} from '@/common/schemas/common.schemas';
+} from "@/common/schemas/common.schemas";
 const router = Router();
 
-router.get('/', validate(paginationSchema), tagController.getTags);
+router.get("/", validate(paginationSchema), tagController.getTags);
 router.get(
-  '/:tagId',
-  validate(paramsIdSchema('tagId')),
+  "/:tagId",
+  validate(paramsIdSchema("tagId")),
   tagController.getTagById,
 );
-router.post(
-  '/',
-  authenticateToken,
-  requireRole('ROLE_ADMIN'),
-  tagController.createTag,
-);
+router.post("/", authenticateToken, tagController.createTag);
 router.delete(
-  '/:tagId',
+  "/:tagId",
   authenticateToken,
-  validate(paramsIdSchema('tagId')),
-  requireRole('ROLE_ADMIN'),
+  validate(paramsIdSchema("tagId")),
   tagController.deleteById,
 );
 
