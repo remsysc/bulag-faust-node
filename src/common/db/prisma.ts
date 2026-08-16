@@ -1,6 +1,6 @@
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
-import { pagination } from 'prisma-extension-pagination';
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+import { pagination } from "prisma-extension-pagination";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 

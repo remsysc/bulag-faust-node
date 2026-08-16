@@ -1,6 +1,5 @@
 import prisma from "@/common/db/prisma";
 import { Pageable, PageResponse } from "@/common/types/entities";
-import { buildPageResponse } from "@/common/utils/pageResponse";
 import { Tag } from "@prisma/client";
 
 export const findAll = async (
@@ -8,6 +7,9 @@ export const findAll = async (
 ): Promise<PageResponse<Tag>> => {
   const [tags, meta] = await prisma.tag
     .paginate({
+      where: {
+        isActive: true,
+      },
       orderBy: {
         [pageable.sort?.field || "createdAt"]:
           pageable.sort?.direction || "desc",
@@ -23,8 +25,8 @@ export const findAll = async (
     content: tags,
     page: meta.currentPage,
     size: pageable.size,
-    totalElements: meta.totalCount,
-    totalPages: meta.pageCount,
+    totalElements: meta.totalCount!,
+    totalPages: meta.pageCount!,
     last: meta.isLastPage,
     first: meta.isFirstPage,
     numberOfElements: tags.length,
@@ -41,6 +43,23 @@ export const createTag = async (name: string): Promise<Tag> => {
 
 export const deleteById = async (id: string): Promise<void> => {
   await prisma.tag.delete({ where: { id } });
+};
+
+export const deactivateById = async (id: string): Promise<void> => {
+  await prisma.tag.update({
+    where: {
+      id,
+    },
+    data: {
+      isActive: false,
+    },
+  });
+};
+
+export const countPostsByTagId = async (id: string): Promise<number> => {
+  return prisma.postTag.count({
+    where: { tagId: id },
+  });
 };
 
 export const existsById = async (id: string): Promise<boolean> => {
