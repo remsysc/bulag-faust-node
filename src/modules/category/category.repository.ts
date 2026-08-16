@@ -1,25 +1,34 @@
-import prisma from '@/common/db/prisma';
-import { Category } from '@prisma/client';
-import { Pageable, PageResponse } from '@/common/types/entities';
-import { buildPageResponse } from '@/common/utils/pageResponse';
+import prisma from "@/common/db/prisma";
+import { Category } from "@prisma/client";
+import { Pageable, PageResponse } from "@/common/types/entities";
+import { buildPageResponse } from "@/common/utils/pageResponse";
 
 export const findAll = async (
   pageable: Pageable,
 ): Promise<PageResponse<Category>> => {
-  const [categories, total] = await Promise.all([
-    prisma.category.findMany({
-      skip: (pageable.page - 1) * pageable.size,
-      take: pageable.size,
+  const [categories, meta] = await prisma.category
+    .paginate({
       orderBy: {
-        [pageable.sort?.field || 'createdAt']:
-          pageable.sort?.direction || 'desc',
+        [pageable.sort?.field || "createdAt"]:
+          pageable.sort?.direction || "desc",
       },
-    }),
+    })
+    .withPages({
+      limit: pageable.size,
+      page: pageable.page,
+      includePageCount: true,
+    });
 
-    prisma.category.count(),
-  ]);
-
-  return buildPageResponse(categories, pageable, total);
+  return {
+    content: categories,
+    page: meta.currentPage,
+    size: pageable.size,
+    totalElements: meta.totalCount!,
+    totalPages: meta.pageCount!,
+    last: meta.isLastPage,
+    first: meta.isFirstPage,
+    numberOfElements: categories.length,
+  };
 };
 
 export const findById = async (id: string): Promise<Category | null> => {

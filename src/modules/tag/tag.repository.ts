@@ -1,23 +1,34 @@
-import prisma from '@/common/db/prisma';
-import { Pageable, PageResponse } from '@/common/types/entities';
-import { buildPageResponse } from '@/common/utils/pageResponse';
-import { Tag } from '@prisma/client';
+import prisma from "@/common/db/prisma";
+import { Pageable, PageResponse } from "@/common/types/entities";
+import { buildPageResponse } from "@/common/utils/pageResponse";
+import { Tag } from "@prisma/client";
 
 export const findAll = async (
   pageable: Pageable,
 ): Promise<PageResponse<Tag>> => {
-  const [tags, total] = await Promise.all([
-    prisma.tag.findMany({
-      skip: (pageable.page - 1) * pageable.size,
-      take: pageable.size,
+  const [tags, meta] = await prisma.tag
+    .paginate({
       orderBy: {
-        [pageable.sort?.field || 'createdAt']:
-          pageable.sort?.direction || 'desc',
+        [pageable.sort?.field || "createdAt"]:
+          pageable.sort?.direction || "desc",
       },
-    }),
-    prisma.tag.count(),
-  ]);
-  return buildPageResponse(tags, pageable, total);
+    })
+    .withPages({
+      limit: pageable.size,
+      page: pageable.page,
+      includePageCount: true,
+    });
+
+  return {
+    content: tags,
+    page: meta.currentPage,
+    size: pageable.size,
+    totalElements: meta.totalCount,
+    totalPages: meta.pageCount,
+    last: meta.isLastPage,
+    first: meta.isFirstPage,
+    numberOfElements: tags.length,
+  };
 };
 
 export const findById = async (id: string): Promise<Tag> => {
